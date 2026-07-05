@@ -3,9 +3,41 @@
 ## 1. System Design
 
 **a. Initial design**
-
 - Briefly describe your initial UML design.
+3 Core Actions a user should be able to perform:  
+1. Add a pet.
+2. Schedule a walk.
+3. See today's tasks.  
+
+
 - What classes did you include, and what responsibilities did you assign to each?
+  - Pet
+    - attributes
+      - name
+      - animal
+    - methods
+      - eat
+      - sleep
+  - Walk
+    - attributes
+      - time
+    - methods
+      - schedule a walk
+      - cancel a walk
+  - Schedule
+    -  attributes
+       -  event
+       -  time
+    -  methods
+       -  list today's tasks
+   - Owner
+     - attributes
+       - name
+       - experience
+     - methods
+       - owns pet
+
+
 
 **b. Design changes**
 
