@@ -4,45 +4,49 @@
 
 **a. Initial design**
 - Briefly describe your initial UML design.
-3 Core Actions a user should be able to perform:  
-1. Add a pet.
-2. Schedule a walk.
-3. See today's tasks.  
-
-
+The UML diagram represents the actions an owner can take in a pet care management app. Three core actions a user should be able to perform are:  
+  - Add a pet.
+  - Schedule a task
+  - See today's tasks.
 - What classes did you include, and what responsibilities did you assign to each?
   - Pet
     - attributes
       - name
-      - animal
+      - species
     - methods
       - eat
       - sleep
-  - Walk
+  - Task
     - attributes
-      - time
+      - title
+      - duration_minutes
+      - priority
     - methods
-      - schedule a walk
-      - cancel a walk
+      - schedule a task
+      - cancel a task
   - Schedule
     -  attributes
-       -  event
-       -  time
+       -  tasks list
     -  methods
        -  list today's tasks
+       -  add a task to the schedule
+       -  build plan for schedule
    - Owner
      - attributes
        - name
        - experience
+       - pets
      - methods
-       - owns pet
+       - add pet to registry
 
 
 
 **b. Design changes**
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+- Did your design change during implementation? If yes, describe at least one change and why you made it.
+- Initially, I created a `Walk` class. But that was too specific. So I replaced `Walk` with a general `Task` class, which contains an attribute where you can specify the activity type is a walk.  
+- Also, there were several relationships missing from the draft. The `Pet` had a `Schedule` and the `Owner` had `Pet`s, but the link between `Owner` and `Schedule` was missing. Afterall, the owner is the one acting on the schedule, so the connection is an important missing link.
+
 
 ---
 

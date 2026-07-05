@@ -6,6 +6,15 @@ scheduling behavior in later steps, then connect it to app.py.
 """
 
 from dataclasses import dataclass, field
+from enum import IntEnum
+
+
+class Priority(IntEnum):
+    """Task priority. Int-ranked so higher priority sorts higher."""
+
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
 
 
 @dataclass
@@ -33,7 +42,9 @@ class Task:
 
     title: str
     duration_minutes: int
-    priority: str = "medium"  # "low" | "medium" | "high"
+    priority: Priority = Priority.MEDIUM
+    pet: Pet | None = None          # which pet this task is for (UML "Walk --> Pet")
+    start_time: str | None = None   # scheduled slot, e.g. "08:00"; set by the planner
 
     def schedule(self) -> None:
         """Mark this task as scheduled / place it on the plan."""
@@ -44,23 +55,11 @@ class Task:
         ...
 
 
-@dataclass
-class Owner:
-    """The pet owner using PawPal+."""
-
-    name: str
-    experience: str = ""  # e.g. "beginner", "experienced"
-    pets: list[Pet] = field(default_factory=list)
-
-    def add_pet(self, pet: Pet) -> None:
-        """Register a pet under this owner (UML "ownsPet")."""
-        ...
-
-
 class Schedule:
     """Holds the day's tasks and produces an ordered daily plan."""
 
-    def __init__(self) -> None:
+    def __init__(self, date: str | None = None) -> None:
+        self.date = date            # the day this schedule is for
         self.tasks: list[Task] = []
 
     def add_task(self, task: Task) -> None:
@@ -71,9 +70,24 @@ class Schedule:
         """Return the tasks planned for today (UML "listTodaysTasks")."""
         ...
 
-    def build_plan(self) -> list[Task]:
-        """Order/select tasks into a daily plan based on constraints.
+    def build_plan(self, available_minutes: int) -> list[Task]:
+        """Order/select tasks into a daily plan within a time budget.
 
-        Scheduling entry point — implemented in a later step.
+        Scheduling entry point — implemented in a later step. Returns a fresh
+        ordered list and does NOT mutate self.tasks.
         """
+        ...
+
+
+@dataclass
+class Owner:
+    """The pet owner using PawPal+."""
+
+    name: str
+    experience: str = ""  # e.g. "beginner", "experienced"
+    pets: list[Pet] = field(default_factory=list)
+    schedule: Schedule = field(default_factory=Schedule)  # UML "Owner maintains Schedule"
+
+    def add_pet(self, pet: Pet) -> None:
+        """Register a pet under this owner (UML "ownsPet")."""
         ...
