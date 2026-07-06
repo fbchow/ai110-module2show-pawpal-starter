@@ -55,12 +55,18 @@ The UML diagram represents the actions an owner can take in a pet care managemen
 **a. Constraints and priorities**
 
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
+  - Time
+  - Priority
+  - Frequency
 - How did you decide which constraints mattered most?
+  - I did not think frequency was important, so I removed it from the Pawpal System. There are already too many variables to keep track of. I think it's better to focus on only two features of the scheduler (time and priority) because that mimics what a human planning their daily schedule would value first. 
 
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
+  - The choice is to only allow the owner to perform one task at a time linearly. I think the tradeoff to leave out the ability to multi-task or have multiple tasks in the same allotment of time is a simpler first pass implementation. As well, as a subtle user experience suggestion: "Yeah, you could multi-task but it's probably unhealthy. So I will leave out that option to discourage multi-tasking behavior."
+  - The schedule sorts by time ascending, ties broken by priority (with High first), then untimed tasks. That means the user has both pets tasks mixed together -- instead of batched together by pet. That may cause more context switching between pets. But it seems reasonable given the demands of modern society. There will be vet visits and appointments that inevitably overlap.  
 
 ---
 
