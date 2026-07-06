@@ -35,11 +35,11 @@ class Task:
     done: bool = False
     pet: "Pet | None" = None         # owning pet; set by Pet.add_task
 
-    def mark_done(self) -> None:
+    def mark_complete(self) -> None:
         """Mark this task as completed."""
         self.done = True
 
-    def mark_undone(self) -> None:
+    def mark_incomplete(self) -> None:
         """Reopen a completed task."""
         self.done = False
 
