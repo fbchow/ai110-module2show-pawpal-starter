@@ -203,7 +203,8 @@ class Scheduler:
         """
         by_slot: dict[str, list[Task]] = defaultdict(list)
         for task in owner.all_tasks():
-            if task.time is not None:
+            # Completed tasks no longer occupy their slot, so they can't clash.
+            if task.time is not None and not task.done:
                 by_slot[task.time].append(task)
 
         warnings: list[str] = []

@@ -118,8 +118,10 @@ The method groups timed tasks by their exact start-time string and flags a slot 
 
 - How confident are you that your scheduler works correctly?
   - 3-4 ish. I think there might still be some case the system breaks.
+  - The cases where mutiple tasks share the same titles may be confusing. For example: you can make both a task that says "walk dog" daily and another one that is just a single occurence. The daily one will spawn another one after it's marked complete. But the single time task won't. I think that may be confusing for a user. 
 - What edge cases would you test next if you had more time?
   - If the user marks a tasks as done, would that still cause time conflicts with tasks in the future?
+  - If tasks overlapped by ending with 1 minute left and another starting at the same 1 minute time overalap, what would happen to the system?
 
 ---
 
@@ -128,11 +130,17 @@ The method groups timed tasks by their exact start-time string and flags a slot 
 **a. What went well**
 
 - What part of this project are you most satisfied with?
+  - I'm most satisfied with following through with the process. I enjoyed starting with a class and method sketch, then iterating upon that.  
 
 **b. What you would improve**
 
 - If you had another iteration, what would you improve or redesign?
+  - Although it's part of the spec to create recurring tasks spawned, I think I would remove that functionality because it overcomplicates the app on a first pass. 
+  - I would add logic to handle the cases where time duration of events overlap with the start of the next event. I think that is a very realistic use case.
+  - I would take the time to learn how to edit my `CLAUDE.MD` file to generalize this context. And force any `python` code to run with `python3`.  
+
 
 **c. Key takeaway**
 
-- What is one important thing you learned about designing systems or working with AI on this project?
+- What is one important thing you learned about designing systems or working with AI on this project?  
+  - AI loves complexity! I think it's important to tell it to stay simple as possible. So much is suggested to change at one time, I don't think it's very functional to test. I think I need to work on writing prompts that are even more restrictive about staying focused on one scope and testing that first.  

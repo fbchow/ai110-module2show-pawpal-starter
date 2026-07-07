@@ -65,7 +65,7 @@ if not owner.pets:
     owner.add_pet(Pet(name=pet_name, species=species))
 pet = owner.pets[0]
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5 = st.columns(5)
 with col1:
     task_title = st.text_input("Task title", value="Morning walk")
 with col2:
@@ -74,6 +74,10 @@ with col3:
     priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
 with col4:
     frequency = st.selectbox("Frequency", ["once", "daily", "weekly"], index=0)
+with col5:
+    # Optional clock slot ("HH:MM"). Drives conflict detection in the Scheduler;
+    # leave blank for an untimed task that occupies no slot.
+    task_time = st.text_input("Time (HH:MM)", value="08:00")
 
 if st.button("Add task"):
     pet.add_task(
@@ -82,15 +86,52 @@ if st.button("Add task"):
             duration_minutes=int(duration),
             priority=Priority[priority.upper()],  # "high" -> Priority.HIGH
             frequency=Frequency(frequency),       # "daily" -> Frequency.DAILY
+            time=task_time.strip() or None,        # "08:00" -> scheduled slot
         )
     )
 
 tasks = owner.all_tasks()
 if tasks:
-    st.write("Current tasks:")
+    # --- Sort & filter controls, powered by the Scheduler ---------------
+    fcol1, fcol2 = st.columns(2)
+    with fcol1:
+        sort_by = st.selectbox("Sort by", ["priority", "time"])
+    with fcol2:
+        status = st.selectbox("Show", ["all", "pending", "done"])
+
+    # Filter first (by completion status), then sort the surviving tasks.
+    done_filter = {"all": None, "pending": False, "done": True}[status]
+    filtered = scheduler.filter_tasks(owner, done=done_filter)
+
+    if sort_by == "priority":
+        ordering = scheduler.tasks_by_priority(owner)
+    else:
+        ordering = scheduler.sort_by_time(owner)
+    # Keep the chosen sort order but drop tasks removed by the filter.
+    keep = set(id(t) for t in filtered)
+    visible = [t for t in ordering if id(t) in keep]
+
+    # --- Conflict warnings: surface BEFORE the table so they can't be
+    #     scrolled past. One warning per clash, naming the exact slot and
+    #     the colliding tasks so the owner knows what to reschedule. -----
+    conflicts = scheduler.find_conflicts(owner)
+    if conflicts:
+        st.warning(
+            f"⚠️ {len(conflicts)} scheduling conflict"
+            f"{'s' if len(conflicts) > 1 else ''} — "
+            "two tasks can't happen at the same time. "
+            "Change one task's **Time (HH:MM)** to fix it."
+        )
+        for c in conflicts:
+            st.warning(c)
+    else:
+        st.success("✅ No scheduling conflicts — every task has its own time slot.")
+
+    st.write(f"Current tasks ({len(visible)} shown):")
     st.table(
         [
             {
+                "time": t.time or "—",
                 "title": t.description,
                 "duration_minutes": t.duration_minutes,
                 "priority": t.priority.name,
@@ -98,7 +139,7 @@ if tasks:
                 "due_date": t.due_date.isoformat() if t.due_date else "—",
                 "done": t.done,
             }
-            for t in tasks
+            for t in visible
         ]
     )
 
@@ -124,4 +165,28 @@ available_minutes = st.number_input(
 
 if st.button("Generate schedule"):
     plan = scheduler.build_plan(owner, available_minutes=int(available_minutes))
-    st.text(format_plan(plan))
+    if plan:
+        total = sum(t.duration_minutes for t in plan)
+        st.success(
+            f"✅ Scheduled {len(plan)} task{'s' if len(plan) > 1 else ''} "
+            f"using {total} of {int(available_minutes)} available minutes."
+        )
+        st.table(
+            [
+                {
+                    "time": t.time or "—",
+                    "title": t.description,
+                    "duration_minutes": t.duration_minutes,
+                    "priority": t.priority.name,
+                    "pet": t.pet.name if t.pet else "—",
+                }
+                for t in sorted(
+                    plan, key=lambda t: (t.time is None, t.time or "", -t.priority)
+                )
+            ]
+        )
+        # A plan that fits the budget can still double-book a time slot.
+        for c in scheduler.find_conflicts(owner):
+            st.warning(c)
+    else:
+        st.info("No tasks fit the available time. Add tasks or increase the budget.")

@@ -1,0 +1,70 @@
+classDiagram
+    %% PawPal+ class diagram — updated to match the final implementation
+    %% in pawpal_system.py. Core model: Owner -> Pet -> Task, organized by a
+    %% stateless Scheduler. Module-level helper format_plan(plan) renders a plan.
+
+    class Task {
+        +String description
+        +int duration_minutes
+        +Priority priority
+        +String time
+        +bool done
+        +Frequency frequency
+        +date due_date
+        +Pet pet
+        +mark_complete() void
+        +mark_incomplete() void
+        +cancel() void
+    }
+
+    class Pet {
+        +String name
+        +String species
+        +List~Task~ tasks
+        +add_task(task) void
+        +remove_task(task) void
+        +pending_tasks() List~Task~
+        +eat() void
+        +sleep() void
+    }
+
+    class Owner {
+        +String name
+        +String experience
+        +List~Pet~ pets
+        +add_pet(pet) void
+        +all_tasks() List~Task~
+    }
+
+    class Scheduler {
+        +all_tasks(owner) List~Task~
+        +pending_tasks(owner) List~Task~
+        +filter_tasks(owner, done, pet_name) List~Task~
+        +tasks_by_priority(owner) List~Task~
+        +sort_by_time(owner) List~Task~
+        +todays_tasks(owner) List~Task~
+        +find_conflicts(owner) List~String~
+        +has_conflicts(owner) bool
+        +build_plan(owner, available_minutes) List~Task~
+    }
+
+    class Priority {
+        <<enumeration>>
+        LOW
+        MEDIUM
+        HIGH
+    }
+
+    class Frequency {
+        <<enumeration>>
+        ONCE
+        DAILY
+        WEEKLY
+    }
+
+    Owner "1" --> "*" Pet : owns
+    Pet "1" o-- "*" Task : has
+    Task "*" --> "1" Pet : belongs to
+    Scheduler ..> Owner : operates on
+    Task ..> Priority : uses
+    Task ..> Frequency : uses
