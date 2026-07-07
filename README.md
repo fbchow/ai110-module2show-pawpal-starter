@@ -47,7 +47,7 @@ pip install -r requirements.txt
 Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
 ```
 python main.py
-```
+
 Daily plan
   08:00  Feed cat            Mochi        10 min  [HIGH]
   08:00  Morning walk        Biscuit      30 min  [HIGH]
@@ -74,14 +74,14 @@ Sample test output:
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting |`tasks_by_priority()` | by priority |
+| Time sorting |`sort_by_time()` | by time |
+| Filtering |`filter_tasks()` | by completion status and/or pet name |
+| Conflict handling |`find_conflicts()` | overlapping time slots |
+| Recurring tasks |`mark_complete()` | automatically creates new task after marked compelte |
 
 ## 📸 Demo Walkthrough
 

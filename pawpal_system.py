@@ -12,8 +12,10 @@ Model overview:
 
 from __future__ import annotations
 
+from collections import defaultdict
 from dataclasses import dataclass, field
-from enum import IntEnum
+from datetime import date, timedelta
+from enum import Enum, IntEnum
 
 
 class Priority(IntEnum):
@@ -22,6 +24,21 @@ class Priority(IntEnum):
     LOW = 1
     MEDIUM = 2
     HIGH = 3
+
+
+class Frequency(str, Enum):
+    """How often a task recurs. ONCE tasks do not repeat."""
+
+    ONCE = "once"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+
+
+# How far ahead the next occurrence of a recurring task is scheduled.
+_RECUR_DELTAS = {
+    Frequency.DAILY: timedelta(days=1),
+    Frequency.WEEKLY: timedelta(weeks=1),
+}
 
 
 @dataclass
@@ -34,10 +51,25 @@ class Task:
     time: str | None = None          # scheduled slot, e.g. "08:00"; set by the planner
     done: bool = False
     pet: "Pet | None" = None         # owning pet; set by Pet.add_task
+    frequency: Frequency = Frequency.ONCE
+    due_date: date | None = None     # when this occurrence is due
 
     def mark_complete(self) -> None:
-        """Mark this task as completed."""
+        """Mark this task done; for daily/weekly tasks, spawn the next occurrence."""
         self.done = True
+        delta = _RECUR_DELTAS.get(self.frequency)
+        if delta is None or self.pet is None:
+            return
+        # daily -> today + 1 day, weekly -> today + 7 days (calendar-safe).
+        next_task = Task(
+            description=self.description,
+            duration_minutes=self.duration_minutes,
+            priority=self.priority,
+            time=self.time,
+            frequency=self.frequency,
+            due_date=date.today() + delta,
+        )
+        self.pet.add_task(next_task)
 
     def mark_incomplete(self) -> None:
         """Reopen a completed task."""
@@ -113,6 +145,29 @@ class Scheduler:
         """Incomplete tasks across all of the owner's pets."""
         return [t for t in owner.all_tasks() if not t.done]
 
+    def filter_tasks(
+        self,
+        owner: Owner,
+        done: bool | None = None,
+        pet_name: str | None = None,
+    ) -> list[Task]:
+        """Filter the owner's tasks by completion status and/or pet name.
+
+        Both filters are optional and combine with AND. When both are None,
+        returns all tasks (equivalent to all_tasks). Pet-name matching is
+        case-insensitive.
+        """
+        tasks = owner.all_tasks()
+        if done is not None:
+            tasks = [t for t in tasks if t.done == done]
+        if pet_name is not None:
+            tasks = [
+                t
+                for t in tasks
+                if t.pet is not None and t.pet.name.lower() == pet_name.lower()
+            ]
+        return tasks
+
     def tasks_by_priority(self, owner: Owner) -> list[Task]:
         """All tasks sorted by priority (high first), then shorter tasks first."""
         return sorted(
@@ -120,9 +175,51 @@ class Scheduler:
             key=lambda t: (-t.priority, t.duration_minutes),
         )
 
+    def sort_by_time(self, owner: Owner) -> list[Task]:
+        """All tasks sorted by scheduled time (ascending). Untimed tasks last.
+
+        "HH:MM" strings are zero-padded, so lexicographic order matches clock
+        order and no parsing is needed. The (time is None, ...) key pushes
+        untimed tasks to the end.
+        """
+        return sorted(
+            owner.all_tasks(),
+            key=lambda t: (t.time is None, t.time or ""),
+        )
+
     def todays_tasks(self, owner: Owner) -> list[Task]:
         """Tasks that belong on today's plan: those given a scheduled time."""
         return [t for t in owner.all_tasks() if t.time is not None]
+
+    def find_conflicts(self, owner: Owner) -> list[str]:
+        """Detect tasks scheduled for the same clock slot.
+
+        Lightweight, non-crashing check: groups all *timed* tasks by their
+        "HH:MM" slot and, for any slot holding 2+ tasks, returns a readable
+        warning string naming the time and each colliding task with its pet.
+        Untimed tasks (time is None) are skipped — they occupy no slot. Returns
+        an empty list when there are no conflicts, so the caller decides how to
+        surface (or ignore) them.
+        """
+        by_slot: dict[str, list[Task]] = defaultdict(list)
+        for task in owner.all_tasks():
+            if task.time is not None:
+                by_slot[task.time].append(task)
+
+        warnings: list[str] = []
+        for slot in sorted(by_slot):
+            tasks = by_slot[slot]
+            if len(tasks) < 2:
+                continue
+            joined = ", ".join(
+                f"'{t.description}' ({t.pet.name if t.pet else '—'})" for t in tasks
+            )
+            warnings.append(f"Conflict at {slot}: {joined}")
+        return warnings
+
+    def has_conflicts(self, owner: Owner) -> bool:
+        """True if any two tasks share a scheduled time slot."""
+        return bool(self.find_conflicts(owner))
 
     def build_plan(self, owner: Owner, available_minutes: int) -> list[Task]:
         """Select and order pending tasks that fit within a time budget.

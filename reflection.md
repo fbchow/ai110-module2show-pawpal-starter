@@ -67,6 +67,12 @@ The UML diagram represents the actions an owner can take in a pet care managemen
 - Why is that tradeoff reasonable for this scenario?
   - The choice is to only allow the owner to perform one task at a time linearly. I think the tradeoff to leave out the ability to multi-task or have multiple tasks in the same allotment of time is a simpler first pass implementation. As well, as a subtle user experience suggestion: "Yeah, you could multi-task but it's probably unhealthy. So I will leave out that option to discourage multi-tasking behavior."
   - The schedule sorts by time ascending, ties broken by priority (with High first), then untimed tasks. That means the user has both pets tasks mixed together -- instead of batched together by pet. That may cause more context switching between pets. But it seems reasonable given the demands of modern society. There will be vet visits and appointments that inevitably overlap.  
+- It only detects conflicts when two tasks share the exact same "HH:MM" slot — it ignores overlapping durations.
+The method groups timed tasks by their exact start-time string and flags a slot only when 2+ tasks land on it. So a 60-minute task at "09:00" and another task at "09:30" genuinely overlap in real time, but because their start slots differ, find_conflicts reports nothing.
+-The tradeoff is:
+  - Gained: simplicity and safety. No time-math, no parsing (it leans on the zero-padded "HH:MM" lexicographic trick used in sort_by_time), and no risk of crashing on malformed data. duration_minutes never enters the comparison.
+  - Given up: correctness for real overlap. Interval collisions that don't start at the identical minute slip through undetected.
+  - A couple of related tradeoffs are marked in the same neighborhood if useful: untimed tasks (time is None) are silently excluded from conflict detection entirely, and build_plan uses a greedy priority fill that can leave the time budget underused rather than solving for optimal packing.
 
 ---
 

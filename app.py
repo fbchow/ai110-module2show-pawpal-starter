@@ -1,4 +1,4 @@
-from pawpal_system import Task, Pet, Owner, Scheduler, Priority, format_plan
+from pawpal_system import Task, Pet, Owner, Scheduler, Priority, Frequency, format_plan
 import streamlit as st
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
@@ -65,13 +65,15 @@ if not owner.pets:
     owner.add_pet(Pet(name=pet_name, species=species))
 pet = owner.pets[0]
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 with col1:
     task_title = st.text_input("Task title", value="Morning walk")
 with col2:
     duration = st.number_input("Duration (minutes)", min_value=1, max_value=240, value=20)
 with col3:
     priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
+with col4:
+    frequency = st.selectbox("Frequency", ["once", "daily", "weekly"], index=0)
 
 if st.button("Add task"):
     pet.add_task(
@@ -79,6 +81,7 @@ if st.button("Add task"):
             description=task_title,
             duration_minutes=int(duration),
             priority=Priority[priority.upper()],  # "high" -> Priority.HIGH
+            frequency=Frequency(frequency),       # "daily" -> Frequency.DAILY
         )
     )
 
@@ -91,11 +94,22 @@ if tasks:
                 "title": t.description,
                 "duration_minutes": t.duration_minutes,
                 "priority": t.priority.name,
+                "frequency": t.frequency.value,
+                "due_date": t.due_date.isoformat() if t.due_date else "—",
                 "done": t.done,
             }
             for t in tasks
         ]
     )
+
+    # Completing a daily/weekly task auto-spawns its next occurrence.
+    pending = scheduler.pending_tasks(owner)
+    if pending:
+        labels = {f"{t.description} ({t.frequency.value})": t for t in pending}
+        choice = st.selectbox("Mark a task complete", list(labels))
+        if st.button("Complete task"):
+            labels[choice].mark_complete()
+            st.rerun()
 else:
     st.info("No tasks yet. Add one above.")
 
