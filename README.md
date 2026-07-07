@@ -94,10 +94,12 @@ tests/test_pawpal.py ....................                                       
 
 Describe your app in numbered steps so a reader can follow along without watching a video:
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+1. Create an owner.
+2. Add a pet.
+3. Schedule a task.
+4. Specify time optionally and priority of task.
+   1. Conflicting task times will raise a warning.
+5. View today's schedule.
+6. Option to sort by time, priority, and completeness.
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
