@@ -81,12 +81,20 @@ The method groups timed tasks by their exact start-time string and flags a slot 
 **a. How you used AI**
 
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
+  - Attach my classes sketch and ask for feedback.
+  - Write type of tests needed and ask for help drafting tests. 
 - What kinds of prompts or questions were most helpful?
+  - Explicitly saying: "provide tests for this function."
+  - "Update display logic for this function."
+
 
 **b. Judgment and verification**
 
 - Describe one moment where you did not accept an AI suggestion as-is.
+  - Initially suggested sort by pet. I think that is less helpful for an owner trying to juggle taking care of 2 or more pets at the same time. 
+  - I rejected suggestion to add monthly frequency. I think there is too much detail added all at once. I would rather create a simpler app and build up functionalities from there rather than do so many complex actions all at once.
 - How did you evaluate or verify what the AI suggested?
+  - I look at Plan Mode. Then manually accept edits step by step. I would check the app logic, run the tests, and manually click actions on the web app to evaluate the suggestions.
 
 ---
 
@@ -95,12 +103,23 @@ The method groups timed tasks by their exact start-time string and flags a slot 
 **a. What you tested**
 
 - What behaviors did you test?
+  - Sort tasks by chronological order
+    - Tasks without a time, go last
+    - If times are equal, then sort by insertion order of task.
+  - Sort tasks by priority (from highest to lowest)
+  - When you  hit done, a new recurring daily task spawns.
+  - Time conflict raises warning.
+  - Plan fits under overall time budget.  
+  
 - Why were these tests important?
+  - I think the most important feature is prioritization by level of urgency/importance and time. That is the main use case of the app. The other edge cases are nice to haves for an user.  
 
 **b. Confidence**
 
 - How confident are you that your scheduler works correctly?
+  - 3-4 ish. I think there might still be some case the system breaks.
 - What edge cases would you test next if you had more time?
+  - If the user marks a tasks as done, would that still cause time conflicts with tasks in the future?
 
 ---
 

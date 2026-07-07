@@ -72,11 +72,11 @@ Sample test output:
 ======================================== test session starts ========================================
 platform darwin -- Python 3.14.6, pytest-9.1.1, pluggy-1.6.0
 plugins: anyio-4.14.0
-collected 6 items
+collected 20 items
 
-tests/test_pawpal.py ......                                                                   [100%]
+tests/test_pawpal.py ....................                                                     [100%]
 
-========================================= 6 passed in 0.05s =========================================
+======================================== 20 passed in 0.10s =========================================
 ```
 
 ## 📐 Smarter Scheduling
